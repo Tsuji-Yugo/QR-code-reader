@@ -1,48 +1,70 @@
-const cameraWidth = 300;
-const cameraHeight = 400;
+// Webカメラの起動
+const video = document.getElementById('video');
+let contentWidth;
+let contentHeight;
 
-const cameraInitSmartphoneSupport = () => {
-    const video = document.getElementById("camera");
+const media = navigator.mediaDevices.getUserMedia({ audio: false, video: {width:640, height:480} })
+   .then((stream) => {
+      video.srcObject = stream;
+      video.onloadeddata = () => {
+         video.play();
+         contentWidth = video.clientWidth;
+         contentHeight = video.clientHeight;
+         canvasUpdate();
+         checkImage();
+      }
+   }).catch((e) => {
+      console.log(e);
+   });
 
-    //スマホからの閲覧か
-    const isMobile = navigator.userAgent.match(/iPhone|Android/);
-
-    const cameraSetting = {
-        audio: false,
-        video: {
-            //スマホの場合は縦横を逆に設定する
-            width: isMobile ? cameraHeight : cameraWidth,
-            height: isMobile ? cameraWidth : cameraHeight,
-            facingMode: "environment",
-        }
-    }
-
-    navigator.mediaDevices.getUserMedia(cameraSetting)
-        .then((mediaStream) => {
-            video.srcObject = mediaStream;
-        })
-        .catch((err) => {
-            console.log(err.toString());
-        });
+// カメラ映像のキャンバス表示
+const cvs = document.getElementById('camera-canvas');
+const ctx = cvs.getContext('2d');
+const canvasUpdate = () => {
+   cvs.width = contentWidth;
+   cvs.height = contentHeight;
+   ctx.drawImage(video, 0, 0, contentWidth, contentHeight);
+   requestAnimationFrame(canvasUpdate);
 }
 
-const shoot = () => {
-    //video要素
-    const video = document.getElementById("camera");
-    //canvas要素
-    const canvas = document.getElementById("canvas");
-    //canvas要素の大きさを変更
-    canvas.width = cameraWidth;
-    canvas.height = cameraHeight;
-    //描画用オブジェクトを取得
-    const ctx = canvas.getContext("2d");
+// QRコードの検出
+const rectCvs = document.getElementById('rect-canvas');
+const rectCtx =  rectCvs.getContext('2d');
+const checkImage = () => {
+   // imageDataを作る
+   const imageData = ctx.getImageData(0, 0, contentWidth, contentHeight);
+   // jsQRに渡す
+   const code = jsQR(imageData.data, contentWidth, contentHeight);
 
-    //描画する
-    ctx.drawImage(
-        video,          // データソース 
-        0,              // 描画開始x座標  
-        0,              // 描画開始y座標
-        cameraWidth,    // 描画横サイズ
-        cameraHeight    // 描画縦サイズ
-    );
+   // 検出結果に合わせて処理を実施
+   if (code) {
+      console.log("QRcodeが見つかりました", code);
+      drawRect(code.location);
+      document.getElementById('qr-msg').textContent = `QRコード：${code.data}`;
+   } else {
+      console.log("QRcodeが見つかりません…", code);
+      rectCtx.clearRect(0, 0, contentWidth, contentHeight);
+      document.getElementById('qr-msg').textContent = `QRコード: 見つかりません`;
+   }
+   setTimeout(()=>{ checkImage() }, 500);
+}
+
+// 四辺形の描画
+const drawRect = (location) => {
+   rectCvs.width = contentWidth;
+   rectCvs.height = contentHeight;
+   drawLine(location.topLeftCorner, location.topRightCorner);
+   drawLine(location.topRightCorner, location.bottomRightCorner);
+   drawLine(location.bottomRightCorner, location.bottomLeftCorner);
+   drawLine(location.bottomLeftCorner, location.topLeftCorner)
+}
+
+// 線の描画
+const drawLine = (begin, end) => {
+   rectCtx.lineWidth = 4;
+   rectCtx.strokeStyle = "#F00";
+   rectCtx.beginPath();
+   rectCtx.moveTo(begin.x, begin.y);
+   rectCtx.lineTo(end.x, end.y);
+   rectCtx.stroke();
 }
