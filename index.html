@@ -1,11 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <meta charset="utf-8">
+        <title>カメラ起動</title>
+        <script src="index.js"></script>
 </head>
+
 <body>
-  <h1>hello world</h1>
+  <div>
+    <input type="button" value="カメラ起動" onclick="cameraInitSmartphoneSupport()">
+    <input type="button" value="撮影" onclick="shoot()">
+  </div>
+  <div>
+    <video id="camera" autoplay muted playsinline></video>
+    <canvas id="canvas" wcrossorigin="anonymous"></canvas>
+  </div>
 </body>
+
 </html>
