@@ -1,41 +1,15 @@
-*,
-*:before,
-*:after {
-    box-sizing: border-box;
-}
-
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: sans-serif;
-}
-
-.reader {
-    width: 100vw;
-    height: 100%;
-    position: relative;
-}
-
-.reader-video {
-    background-color: #000;
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-}
-
-.modal-overlay {
-  display: none;
-  position: fixed;
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
   justify-content: center;
   align-items: center;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100%;
-  background-color: rgba(0, 0, 0, .7);
+  height: 100vh;
+  overflow: hidden;
 }
 
-.modal-overlay.is-show {
-  display: flex;
+#qr-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
