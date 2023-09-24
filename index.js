@@ -1,53 +1,64 @@
-// Webカメラの起動
-const video  = document.querySelector('#js-video')
+const video = document.getElementById("qr-video");
+const canvasElement = document.getElementById("qr-canvas");
+const canvas = canvasElement.getContext("2d");
 
-navigator.mediaDevices
-    .getUserMedia({
-        audio: false,
-        video: {
-            facingMode: {exact: 'environment'}
-        }
-    })
-    .then(function(stream) {
-        video.srcObject = stream
-        video.onloadedmetadata = function(e) {
-            video.play()
-        }
-    })
-    .catch(function(err) {
-        alert('Error!!')
-    })
+let scanning = false;
 
-const canvas = document.querySelector('#js-canvas')
-const ctx = canvas.getContext('2d')
-
-const checkImage = () => {
-    // 取得している動画をCanvasに描画
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-
-    // Canvasからデータを取得
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-
-    // jsQRに渡す
-    const code = jsQR(imageData.data, canvas.width, canvas.height)
-
-    // QRコードの読み取りに成功したらモーダル開く
-    // 失敗したら再度実行
-    if (code) {
-        openModal(code.data)
-    } else {
-        setTimeout(() => { checkImage() }, 200)
+// カメラから映像を取得する関数
+async function startCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        scanning = true;
+        scanQRCode();
+    } catch (error) {
+        console.error("カメラを起動できませんでした: ", error);
     }
 }
 
-const openModal = function(url) {
-    document.querySelector('#js-result').innerText = url
-    document.querySelector('#js-link').setAttribute('href', url)
-    document.querySelector('#js-modal').classList.add('is-show')
+// QRコードをスキャンする関数
+function scanQRCode() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA && scanning) {
+        canvasElement.height = video.videoHeight;
+        canvasElement.width = video.videoWidth;
+        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+
+        const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+        if (code) {
+            scanning = false;
+            displayQRCodeData(code.data);
+        } else {
+            requestAnimationFrame(scanQRCode);
+        }
+    } else {
+        requestAnimationFrame(scanQRCode);
+    }
 }
 
-document.querySelector('#js-modal-close')
-    .addEventListener('click', () => {
-        document.querySelector('#js-modal').classList.remove('is-show')
-        checkImage()
-    })
+// QRコードのデータを表示する関数
+function displayQRCodeData(data) {
+    const resultElement = document.getElementById("result");
+    resultElement.textContent = `QRコードデータ: ${data}`;
+
+    // データがURL形式であれば、リンクを開くボタンを表示
+    if (isValidURL(data)) {
+        const openLinkButton = document.getElementById("open-link-button");
+        openLinkButton.style.display = "block";
+
+        // ボタンがクリックされたらリンクを開く
+        openLinkButton.addEventListener("click", () => {
+            window.location.href = data;
+        });
+    }
+}
+
+// 文字列が有効なURLかどうかを確認する関数
+function isValidURL(str) {
+    const pattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+    return pattern.test(str);
+}
+
+// カメラを起動する
+startCamera();
