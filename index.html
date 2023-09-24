@@ -1,28 +1,21 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>QRコードのテスト</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.webmanifest" />
-<script async src="https://cdn.jsdelivr.net/npm/pwacompat@2.0.9/pwacompat.min.js" integrity="sha384-VcI6S+HIsE80FVM1jgbd6WDFhzKYA0PecD/LcIyMQpT4fMJdijBh0I7Iblaacawc" crossorigin="anonymous"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Reader</title>
 </head>
 <body>
-  <div style="display:none">
-    <canvas id="js-canvas"></canvas>
-  </div>
-  <div id="js-modal" class="modal-overlay">
-    <div class="modal">
-      <div class="modal-cnt">
-        <span class="modal-title">読み取り結果</span>
-        <span id="js-result" class="modal-result"></span>
-      </div>
-      <a href="" id="js-link" class="modal-btn" target="_blank">開く</a>
-      <button type="button" id="js-modal-close" class="modal-btn">閉じる</button>
-    </div>
-  </div>
-    
-    <script src="./jsQR.js"></script>
-    <script src="./index.js"></script>
+    <h1>QR Code Reader</h1>
+    <video id="qr-video" playsinline autoplay></video>
+    <canvas id="qr-canvas" style="display: none;"></canvas>
+    <div id="result"></div>
+
+    <!-- リンクを開くボタン -->
+    <button id="open-link-button" style="display: none;">リンクを開く</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@2.0.1/dist/jsQR.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
 
