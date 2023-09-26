@@ -1,64 +1,70 @@
-const video = document.getElementById("qr-video");
-const canvasElement = document.getElementById("qr-canvas");
-const canvas = canvasElement.getContext("2d");
+// Webカメラの起動
+const video = document.getElementById('video');
+let contentWidth;
+let contentHeight;
 
-let scanning = false;
+const media = navigator.mediaDevices.getUserMedia({ audio: false, video: {width:640, height:480} })
+   .then((stream) => {
+      video.srcObject = stream;
+      video.onloadeddata = () => {
+         video.play();
+         contentWidth = video.clientWidth;
+         contentHeight = video.clientHeight;
+         canvasUpdate();
+         checkImage();
+      }
+   }).catch((e) => {
+      console.log(e);
+   });
 
-// カメラから映像を取得する関数
-async function startCamera() {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-        scanning = true;
-        scanQRCode();
-    } catch (error) {
-        console.error("カメラを起動できませんでした: ", error);
-    }
+// カメラ映像のキャンバス表示
+const cvs = document.getElementById('camera-canvas');
+const ctx = cvs.getContext('2d');
+const canvasUpdate = () => {
+   cvs.width = contentWidth;
+   cvs.height = contentHeight;
+   ctx.drawImage(video, 0, 0, contentWidth, contentHeight);
+   requestAnimationFrame(canvasUpdate);
 }
 
-// QRコードをスキャンする関数
-function scanQRCode() {
-    if (video.readyState === video.HAVE_ENOUGH_DATA && scanning) {
-        canvasElement.height = video.videoHeight;
-        canvasElement.width = video.videoWidth;
-        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+// QRコードの検出
+const rectCvs = document.getElementById('rect-canvas');
+const rectCtx =  rectCvs.getContext('2d');
+const checkImage = () => {
+   // imageDataを作る
+   const imageData = ctx.getImageData(0, 0, contentWidth, contentHeight);
+   // jsQRに渡す
+   const code = jsQR(imageData.data, contentWidth, contentHeight);
 
-        const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-        if (code) {
-            scanning = false;
-            displayQRCodeData(code.data);
-        } else {
-            requestAnimationFrame(scanQRCode);
-        }
-    } else {
-        requestAnimationFrame(scanQRCode);
-    }
+   // 検出結果に合わせて処理を実施
+   if (code) {
+      console.log("QRcodeが見つかりました", code);
+      drawRect(code.location);
+      document.getElementById('qr-msg').textContent = `QRコード：${code.data}`;
+   } else {
+      console.log("QRcodeが見つかりません…", code);
+      rectCtx.clearRect(0, 0, contentWidth, contentHeight);
+      document.getElementById('qr-msg').textContent = `QRコード: 見つかりません`;
+   }
+   setTimeout(()=>{ checkImage() }, 500);
 }
 
-// QRコードのデータを表示する関数
-function displayQRCodeData(data) {
-    const resultElement = document.getElementById("result");
-    resultElement.textContent = `QRコードデータ: ${data}`;
-
-    // データがURL形式であれば、リンクを開くボタンを表示
-    if (isValidURL(data)) {
-        const openLinkButton = document.getElementById("open-link-button");
-        openLinkButton.style.display = "block";
-
-        // ボタンがクリックされたらリンクを開く
-        openLinkButton.addEventListener("click", () => {
-            window.location.href = data;
-        });
-    }
+// 四辺形の描画
+const drawRect = (location) => {
+   rectCvs.width = contentWidth;
+   rectCvs.height = contentHeight;
+   drawLine(location.topLeftCorner, location.topRightCorner);
+   drawLine(location.topRightCorner, location.bottomRightCorner);
+   drawLine(location.bottomRightCorner, location.bottomLeftCorner);
+   drawLine(location.bottomLeftCorner, location.topLeftCorner)
 }
 
-// 文字列が有効なURLかどうかを確認する関数
-function isValidURL(str) {
-    const pattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
-    return pattern.test(str);
+// 線の描画
+const drawLine = (begin, end) => {
+   rectCtx.lineWidth = 4;
+   rectCtx.strokeStyle = "#F00";
+   rectCtx.beginPath();
+   rectCtx.moveTo(begin.x, begin.y);
+   rectCtx.lineTo(end.x, end.y);
+   rectCtx.stroke();
 }
-
-// カメラを起動する
-startCamera();
