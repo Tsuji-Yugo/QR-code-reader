@@ -1,15 +1,30 @@
-body {
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  overflow: hidden;
+#wrapper{
+  position: relative;
 }
 
-#qr-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+#video{
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  visibility: hidden;
+}
+
+#camera-canvas{
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 50;
+}
+
+#rect-canvas{
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 100;
+}
+
+#qr-msg{
+  position: absolute;
+  top: 500px;
+  left: 0px;
 }
