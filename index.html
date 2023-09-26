@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Camera</title>
-    <link rel="stylesheet" href="style.css">
+    <title>QRコード</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <video id="qr-video" playsinline autoplay></video>
-
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@2.0.1/dist/jsQR.js"></script>
-    <script src="index.js"></script>
+        <div id="wrapper">
+            <video id="video" autoplay muted playsinline></video>
+            <canvas id="camera-canvas"></canvas>
+            <canvas id="rect-canvas"></canvas>
+            <span id="qr-msg">QRコード: 見つかりません</span>
+        </div>
+    <script src="./jsQR.js"></script>
+    <script src="./index.js"></script>
 </body>
 </html>
 
