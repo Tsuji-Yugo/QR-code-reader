@@ -41,6 +41,12 @@ const checkImage = () => {
       console.log("QRcodeが見つかりました", code);
       drawRect(code.location);
       document.getElementById('qr-msg').textContent = `QRコード：${code.data}`;
+      //取得したurlをリンクに変換して画面に表示
+      const code1 = {
+         data: code
+     };
+     const link = `<a href="${code.data}" target="_blank">${code.data}</a>`;
+     document.body.innerHTML = link;
    } else {
       console.log("QRcodeが見つかりません…", code);
       rectCtx.clearRect(0, 0, contentWidth, contentHeight);
